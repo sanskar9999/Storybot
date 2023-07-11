@@ -16,7 +16,7 @@ class MyClient(discord.Client):
             await message.channel.send("type  !story  for an interactive story \n(thats all i do for now)")
 
         if message.content.startswith('!story'):    # if the !story command has been sent
-            await message.channel.send ("scenario 1")  # normal text
+            await message.channel.send ("scenario 1") 
             await message.channel.send ("https://cdn.discordapp.com/attachments/1113823013872357476/1113823546288910447/1.png")
 
 intents = discord.Intents.default()
