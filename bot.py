@@ -81,13 +81,12 @@ class MyClient(discord.Client):
             if option_letter == option_text_1[-1]:
                 await channel.send(f"You chose {option_text_1}.")
                 # do something based on the option chosen
-                # ...
+                
                 
             elif option_letter == option_text_2[-1]:
                 await channel.send(f"You chose {option_text_2}.")
                 # do something based on the option chosen
-                # ...
-
+                
 intents = discord.Intents.default()
 intents.message_content = True
 
