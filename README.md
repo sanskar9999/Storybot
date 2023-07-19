@@ -2,20 +2,17 @@
 A discord based story bot for a choose-your-adventure type interactive story game
 
 ## Goals
-- ~~running and showing online~~
-- ~~can log messages and read them~~
-- ~~the ability to write messages as response~~
-- ~~the ability to respond to !help command with a list of available commands~~
-- ~~the ability to respond to the !story command to start the story~~ 
-- ~~the ability to send images along with text messages~~
-- ~~the ability to choose different options after a scenario has been laid down~~
-- ~~the ability to add emojis for different options~~
-- ~~the ability to make this choice by reacting with emojis on the message~~
+- ~~running and showing online
+- ~~can log messages and read them
+- ~~the ability to write messages as response
+- ~~the ability to respond to !help command with a list of available commands
+- ~~the ability to respond to the !story command to start the story
+- ~~the ability to send images along with text messages
+- ~~the ability to choose different options after a scenario has been laid down
+- ~~the ability to add emojis for different options
+- ~~the ability to make this choice by reacting with emojis on the message
 
-
-Hello, this is Bing. I see that you are working on a discord bot for a choose your adventure type story with options and multiple endings based on the choices. That sounds like a fun and creative project! 😊
-
-I have inspected your code and found some syntax and logical errors. Here are some of them:
+errors
 
 - On line 67, you have an `elif` statement without a corresponding `if` statement. You need to add an `if` statement before the `elif` statement to check the option chosen by the user.
 - On line 69, you have an indentation error. You need to indent the code block under the `elif` statement to match the indentation level of the previous code block.
