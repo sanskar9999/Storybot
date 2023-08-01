@@ -3,7 +3,7 @@ from discord.ext import commands
 
 intents = discord.Intents.default()
 intents.message_content = True
-intents.message_reactions = True
+intents.reactions = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 
@@ -17,8 +17,8 @@ story = [
     {
         "text": "Once upon a time, you find yourself standing at a crossroad.",
         "options": {
-            "A": "Go left",
-            "B": "Go right"
+            "\U0001F1E6": "Go left",
+            "\U0001F1E7": "Go right"
         },
         "images": [
             "image_url_here"
@@ -27,12 +27,11 @@ story = [
     {
         "text": "You encounter a magical forest. What will you do?",
         "options": {
-            "A": "Explore the forest",
-            "B": "Leave the forest"
+            "\U0001F1E8": "Explore the forest",
+            "\U0001F1E9": "Leave the forest"
         },
         "images": []
-    },
-    # Add more story chapters here...
+    }
 ]
 
 @bot.event
@@ -40,14 +39,14 @@ async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')
 
 @bot.command()
-async def help(ctx):
+async def story_help(ctx):
     # Provide a list of available commands here
     await ctx.send("List of available commands:\n"
-                   "!help - Show available commands\n"
-                   "!story - Start the interactive story")
+                   "!story_help - Show available commands\n"
+                   "!begin_story - Start the interactive story")
 
 @bot.command()
-async def story(ctx):
+async def begin_story(ctx):  # Renamed the story command to begin_story
     global is_story_running, story_chapter, story_options
     if is_story_running:
         await ctx.send("The story is already running. Type !continue to proceed.")
@@ -58,29 +57,34 @@ async def story(ctx):
         await ctx.send(story[story_chapter]["text"])
         await show_options(ctx)
 
-@bot.command()
-async def continue_story(ctx, option: str):
+async def show_options(ctx):
+    options_text = "\n".join([f"{emoji}: {option}" for emoji, option in story_options.items()])
+    message = await ctx.send(options_text)
+
+    for emoji in story_options.keys():
+        await message.add_reaction(emoji)
+
+@bot.event
+async def on_reaction_add(reaction, user):
     global is_story_running, story_chapter, story_options
+
+    if user.bot:  # Ignore reactions from bots
+        return
+
     if is_story_running:
-        if option.upper() in story_options:
+        if reaction.emoji in story_options.keys():
             story_chapter += 1
             if story_chapter < len(story):
                 story_options = story[story_chapter]["options"]
-                await ctx.send(story[story_chapter]["text"])
-                await show_options(ctx)
+                await reaction.message.channel.send(story[story_chapter]["text"])
+                await show_options(reaction.message.channel)
             else:
-                await ctx.send("The story has ended.")
+                await reaction.message.channel.send("The story has ended.")
                 is_story_running = False
         else:
-            await ctx.send("Invalid option. Please choose a valid option.")
-    else:
-        await ctx.send("The story has not started yet. Type !story to begin.")
-
-async def show_options(ctx):
-    options_text = "\n".join([f"{emoji}: {option}" for emoji, option in story_options.items()])
-    await ctx.send(options_text)
-
-# Add other event handlers and commands as needed...
+            await reaction.message.channel.send("Invalid option. Please choose a valid option.")
 
 # Run the bot with the provided token
-bot.run("YOUR_DISCORD_BOT_TOKEN")
+bot.run(token)
+
+# PS: my code finally works as intended omg iam so happy literally cheering
