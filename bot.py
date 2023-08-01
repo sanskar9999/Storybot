@@ -204,4 +204,4 @@ async def on_reaction_add(reaction, user):
             await reaction.message.channel.send("Invalid option. Please choose a valid option.")
 
 # Run the bot with the provided token
-bot.run("MTExMTM3Mjg2NzgzODQzMTI4Mw.GAwZI1.1WLnEvhuYcOuf8kU-dU1DqDYEMzvEECEP7oiyk")
+bot.run("token")
