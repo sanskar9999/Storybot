@@ -1,95 +1,86 @@
 import discord
-import asyncio
-import random
+from discord.ext import commands
 
-class MyClient(discord.Client):
-    async def on_ready(self):
-        print(f'Logged on as {self.user}!')
-
-    async def on_message(self, message):
-        print(f'Message from {message.author}: {message.content}')
-
-        if message.author == client.user:
-            return
-
-        if message.content.startswith('!help'):
-            await message.channel.send("type  !story  for an interactive story \n(thats all i do for now)")
-
-        if message.content.startswith('!story'):    
-            await self.start_story(message.channel) # call a function to start the story
-
-    async def start_story(self, channel):
-        # define the scenarios and options as dictionaries
-        scenarios = {
-            1: ("scenario 1", "https://cdn.discordapp.com/attachments/1113823013872357476/1113823546288910447/1.png"),
-            2: ("scenario 2", "https://cdn.discordapp.com/attachments/1113823013872357476/1113823546288910447/2.png"),
-            3: ("scenario 3", "https://cdn.discordapp.com/attachments/1113823013872357476/1113823546288910447/3.png"),
-            4: ("scenario 4", "https://cdn.discordapp.com/attachments/1113823013872357476/1113823546288910447/4.png"),
-            5: ("scenario 5", "https://cdn.discordapp.com/attachments/1113823013872357476/1113823546288910447/5.png")
-        }
-
-        options = {
-            1: ("option A", "option B"),
-            2: ("option C", "option D"),
-            3: ("option E", "option F"),
-            4: ("option G", "option H"),
-            5: ("option I", "option J")
-        }
-
-        # define the emojis for different options
-        emojis = {
-            "A": "\U0001F1E6",
-            "B": "\U0001F1E7",
-            "C": "\U0001F1E8",
-            "D": "\U0001F1E9",
-            "E": "\U0001F1EA",
-            "F": "\U0001F1EB",
-            "G": "\U0001F1EC",
-            "H": "\U0001F1ED",
-            "I": "\U0001F1EE",
-            "J": "\U0001F1EF"
-        }
-
-        # choose a random scenario and option pair
-        scenario_id = random.randint(1, len(scenarios))
-        scenario_text, scenario_image = scenarios[scenario_id]
-        option_text_1, option_text_2 = options[scenario_id]
-
-        # send the scenario and options as an embed with image
-        embed = discord.Embed(title=scenario_text, color=0x00ff00)
-        embed.set_image(url=scenario_image)
-        embed.add_field(name="Choose one:", value=f"{emojis[option_text_1[-1]]} {option_text_1}\n{emojis[option_text_2[-1]]} {option_text_2}", inline=False)
-        message = await channel.send(embed=embed)
-
-        # add the emojis as reactions to the message
-        await message.add_reaction(emojis[option_text_1[-1]])
-        await message.add_reaction(emojis[option_text_2[-1]])
-
-        # wait for a reaction from the user
-        def check(reaction, user):
-            return user != client.user and reaction.message.id == message.id and str(reaction.emoji) in emojis.values()
-
-        try:
-            reaction, user = await client.wait_for('reaction_add', timeout=60.0, check=check)
-        except asyncio.TimeoutError:
-            await channel.send("Sorry, you took too long to choose.")
-        else:
-            # get the option letter from the emoji
-            option_letter = list(emojis.keys())[list(emojis.values()).index(str(reaction.emoji))]
-            
-            # send a response based on the option chosen
-            if option_letter == option_text_1[-1]:
-                await channel.send(f"You chose {option_text_1}.")
-                # do something based on the option chosen
-                
-                
-            elif option_letter == option_text_2[-1]:
-                await channel.send(f"You chose {option_text_2}.")
-                # do something based on the option chosen
-                
 intents = discord.Intents.default()
 intents.message_content = True
+intents.message_reactions = True
 
-client = MyClient(intents=intents)
+bot = commands.Bot(command_prefix='!', intents=intents)
 
-client.run('token')
+# Other necessary variables and data structures
+is_story_running = False
+story_chapter = 0
+story_options = {}
+
+# Sample story data (You can customize this)
+story = [
+    {
+        "text": "Once upon a time, you find yourself standing at a crossroad.",
+        "options": {
+            "A": "Go left",
+            "B": "Go right"
+        },
+        "images": [
+            "image_url_here"
+        ]
+    },
+    {
+        "text": "You encounter a magical forest. What will you do?",
+        "options": {
+            "A": "Explore the forest",
+            "B": "Leave the forest"
+        },
+        "images": []
+    },
+    # Add more story chapters here...
+]
+
+@bot.event
+async def on_ready():
+    print(f'{bot.user.name} has connected to Discord!')
+
+@bot.command()
+async def help(ctx):
+    # Provide a list of available commands here
+    await ctx.send("List of available commands:\n"
+                   "!help - Show available commands\n"
+                   "!story - Start the interactive story")
+
+@bot.command()
+async def story(ctx):
+    global is_story_running, story_chapter, story_options
+    if is_story_running:
+        await ctx.send("The story is already running. Type !continue to proceed.")
+    else:
+        is_story_running = True
+        story_chapter = 0
+        story_options = story[story_chapter]["options"]
+        await ctx.send(story[story_chapter]["text"])
+        await show_options(ctx)
+
+@bot.command()
+async def continue_story(ctx, option: str):
+    global is_story_running, story_chapter, story_options
+    if is_story_running:
+        if option.upper() in story_options:
+            story_chapter += 1
+            if story_chapter < len(story):
+                story_options = story[story_chapter]["options"]
+                await ctx.send(story[story_chapter]["text"])
+                await show_options(ctx)
+            else:
+                await ctx.send("The story has ended.")
+                is_story_running = False
+        else:
+            await ctx.send("Invalid option. Please choose a valid option.")
+    else:
+        await ctx.send("The story has not started yet. Type !story to begin.")
+
+async def show_options(ctx):
+    options_text = "\n".join([f"{emoji}: {option}" for emoji, option in story_options.items()])
+    await ctx.send(options_text)
+
+# Add other event handlers and commands as needed...
+
+# Run the bot with the provided token
+bot.run("YOUR_DISCORD_BOT_TOKEN")
